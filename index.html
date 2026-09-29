@@ -1,1 +1,115 @@
-index.html
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Viajeros del Tiempo y del Mundo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#0b3d91,#168aad);min-height:100vh;padding:20px;color:#172033}
+.box{max-width:850px;margin:auto;background:white;border-radius:22px;padding:25px;box-shadow:0 15px 40px #0004}
+h1{color:#0b3d91;font-size:clamp(28px,6vw,46px);margin:0 0 8px}.muted{color:#667085}
+button{border:0;border-radius:12px;padding:13px 17px;margin:5px;background:#0b3d91;color:white;font-weight:bold;font-size:16px;cursor:pointer}
+button.secondary{background:#e9eef6;color:#172033}.levels{display:flex;gap:12px;flex-wrap:wrap}.level{flex:1;min-width:190px;background:#f4f7fb;color:#172033;border:2px solid #dbe5f2}.level b{display:block;font-size:22px}
+input{width:100%;padding:14px;border:2px solid #dbe5f2;border-radius:12px;font-size:17px;margin:8px 0 12px}.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.badge{background:#eef4ff;color:#0b3d91;padding:7px 11px;border-radius:99px;font-weight:bold}
+.progress{height:9px;background:#e8edf3;border-radius:9px;margin:18px 0;overflow:hidden}.bar{height:100%;background:#0b3d91}.question{font-size:clamp(22px,4vw,31px);font-weight:bold;line-height:1.3;margin:25px 0}.answer{background:#f4f7fb;padding:16px;border-radius:12px;margin-top:12px}.ok{color:#147a3d;font-weight:bold}.bad{color:#b42318;font-weight:bold}
+@media(max-width:600px){.box{padding:18px}.levels{display:block}.level{width:100%;margin:5px 0}}
+</style>
+</head>
+<body>
+<div class="box" id="app"></div>
+<script>
+const qs={
+facil:[
+["Geografía","¿Cuál es el continente donde se encuentra Argentina?","América del Sur"],
+["Geografía","¿Cómo se llama el océano que está al este de Argentina?","Océano Atlántico"],
+["Geografía","¿Cuál es la capital de Argentina?","Ciudad Autónoma de Buenos Aires"],
+["Geografía","¿Qué línea imaginaria divide a la Tierra en norte y sur?","La línea del Ecuador"],
+["Geografía","¿Cuál es el río más largo de Argentina?","Río Paraná"],
+["Historia","¿En qué año se declaró la Independencia de Argentina?","1816"],
+["Historia","¿Quién fue el General que cruzó los Andes para liberar Chile y Perú?","José de San Martín"],
+["Historia","¿Cómo se llamaba el período antes de la llegada de los españoles?","Época precolombina"],
+["Historia","¿En qué mes y día celebramos la Revolución de Mayo?","25 de mayo"],
+["Historia","¿Quién llegó a América en 1492?","Cristóbal Colón"]],
+medio:[
+["Geografía","¿Cómo se llama la cordillera que separa Argentina de Chile?","Cordillera de los Andes"],
+["Geografía","¿Qué clima predomina en Misiones y Corrientes?","Clima subtropical húmedo"],
+["Geografía","¿Qué tres países formaban el Mercosur original?","Argentina, Brasil y Uruguay"],
+["Geografía","¿Qué es un mapa?","Una representación gráfica de una parte o de toda la Tierra"],
+["Geografía","¿Cómo se llama el punto más alto de América, ubicado en Argentina?","Cerro Aconcagua"],
+["Historia","¿En qué ciudad se firmó la Declaración de Independencia?","Tucumán"],
+["Historia","¿Qué pueblos originarios habitaban la región pampeana?","Tehuelches y mapuches"],
+["Historia","¿Qué fue la Revolución Industrial?","Un cambio económico y social que comenzó en Inglaterra en el siglo XVIII con máquinas y fábricas"],
+["Historia","¿Quién fue el primer Presidente de Argentina?","Bernardino Rivadavia"],
+["Historia","¿Qué significan las fechas patrias?","Son días que recuerdan hechos importantes de nuestra historia"]],
+dificil:[
+["Geografía","¿Cuáles son las 4 regiones climáticas de Argentina?","Tropical o subtropical, templado, árido o semiárido y frío"],
+["Geografía","¿Qué es la densidad de población?","Cantidad de habitantes que viven en un kilómetro cuadrado"],
+["Geografía","¿Por qué se dice que Argentina tiene forma de abanico?","Porque su territorio se extiende de norte a sur de forma estrecha y alargada, ensanchándose hacia el sur"],
+["Geografía","¿Qué son los recursos naturales? Da 2 ejemplos.","Son elementos que la naturaleza nos da y usamos para vivir, como agua, aire, suelo, minerales o plantas"],
+["Geografía","¿Cuál es la diferencia entre clima y tiempo atmosférico?","El tiempo es lo que ocurre en un momento; el clima es lo que predomina en una zona durante muchos años"],
+["Historia","¿Cuáles fueron algunas causas de la independencia de las colonias americanas?","La Ilustración, la independencia de Estados Unidos, la invasión napoleónica a España y el descontento con los impuestos"],
+["Historia","¿Qué rol cumplían las mujeres en la época colonial?","Se ocupaban del hogar y la familia, pero también trabajaban, comerciaban y algunas participaron en la independencia"],
+["Historia","¿Qué es el colonialismo?","Cuando un país poderoso domina otro territorio y le impone su poder, leyes o costumbres"],
+["Historia","¿Por qué se llamó Patria Boba a un período de la independencia?","Por los conflictos internos y la falta de una organización política clara"],
+["Historia","¿Cuál es la diferencia entre historia y prehistoria?","La historia comienza con la escritura; la prehistoria es el período anterior a los registros escritos"]]};
+const desafio=[
+["Desafío","¿Qué relación hay entre la geografía y la historia?","La geografía influye en la historia: el territorio, los recursos, los desplazamientos y las formas de defensa condicionan las sociedades."],
+["Desafío","Nombra 2 pueblos originarios de Argentina y dónde vivían.","Por ejemplo: Guaraníes → Noreste; Mapuches → Patagonia y Cuyo; Quechuas → Noroeste; Tehuelches → Sur."]
+];
+let level,questions=[],i=0,score=0,name="Jugador",answered=false;
+const app=document.getElementById("app");
+const norm=s=>s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g," ");
+function correct(user,answer){
+ const u=norm(user);if(!u.trim())return false;
+ if(/\d/.test(answer))return u.includes(norm(answer));
+ const words=norm(answer).split(/\s+/).filter(x=>x.length>=5);
+ return words.filter(x=>u.includes(x)).length>=Math.max(1,Math.ceil(words.length*.28));
+}
+function menu(){
+app.innerHTML=`<h1>🗺️⏳ Viajeros del Tiempo y del Mundo</h1>
+<p class="muted">Juego educativo de Geografía + Historia · 1° año de Secundaria</p>
+<label><b>Jugador o equipo</b><input id="name" placeholder="Ej.: Los Exploradores"></label>
+<h2>Elegí un nivel</h2><div class="levels">
+<button class="level" onclick="start('facil')"><b>⭐ Fácil</b>10 preguntas</button>
+<button class="level" onclick="start('medio')"><b>⭐⭐ Medio</b>10 preguntas</button>
+<button class="level" onclick="start('dificil')"><b>⭐⭐⭐ Difícil</b>10 preguntas</button></div>
+<button onclick="start('completo')">🏆 Partida completa · 32 preguntas · 34 puntos</button>`;
+}
+function start(l){
+name=(document.getElementById("name")?.value||"Jugador").trim()||"Jugador";
+level=l;score=0;i=0;answered=false;
+questions=l==="completo"?[...qs.facil,...qs.medio,...qs.dificil,...desafio]:qs[l];
+draw();
+}
+function draw(){
+const q=questions[i],pts=q[0]==="Desafío"?2:1;
+app.innerHTML=`<div class="top"><div><span class="badge">${name}</span> <span class="badge">${q[0]}</span></div><b>🏆 ${score} puntos</b></div>
+<div class="progress"><div class="bar" style="width:${i/questions.length*100}%"></div></div>
+<p class="muted">Pregunta ${i+1} de ${questions.length} · vale ${pts} punto${pts>1?"s":""}</p>
+<div class="question">${q[1]}</div><input id="answer" placeholder="Escribí tu respuesta..." ${answered?"disabled":""}>
+<button id="send" onclick="answer()">✅ Responder</button><button class="secondary" onclick="showAnswer()">👀 Ver respuesta</button><button class="secondary" onclick="menu()">🏠 Menú</button>
+<div id="feedback"></div>`;
+document.getElementById("answer").focus();
+}
+function answer(){
+if(answered)return;answered=true;
+const q=questions[i],ok=correct(document.getElementById("answer").value,q[2]),pts=q[0]==="Desafío"?2:1;
+if(ok)score+=pts;
+document.getElementById("answer").disabled=true;document.getElementById("send").disabled=true;
+feedback(ok,q,pts);
+}
+function showAnswer(){if(answered)return;answered=true;document.getElementById("answer").disabled=true;document.getElementById("send").disabled=true;feedback(null,questions[i],questions[i][0]==="Desafío"?2:1)}
+function feedback(ok,q,pts){
+const f=document.getElementById("feedback");
+f.innerHTML=ok===true?`<div class="answer"><p class="ok">🎉 ¡Correcto! +${pts}</p>${q[2]}</div>`:ok===false?`<div class="answer"><p class="bad">❌ No es correcto.</p><b>Respuesta correcta:</b> ${q[2]}</div>`:`<div class="answer"><b>Respuesta:</b> ${q[2]}</div>`;
+f.innerHTML+=`<button onclick="${i===questions.length-1?'finish()':'next()'}">${i===questions.length-1?'🏆 Ver resultado':'➡️ Siguiente'}</button>`;
+}
+function next(){i++;answered=false;draw()}
+function finish(){
+const max=questions.reduce((n,q)=>n+(q[0]==="Desafío"?2:1),0);
+app.innerHTML=`<h1>🏆 ¡Partida terminada!</h1><p>${name}</p><div style="font-size:50px;font-weight:bold">⭐ ${score}/${max}</div><p>¡Gracias por jugar!</p><button onclick="menu()">🏠 Volver al menú</button><button onclick="start(level)">🔄 Jugar de nuevo</button>`;
+}
+menu();
+</script>
+</body>
+</html>
